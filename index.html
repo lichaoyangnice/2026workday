@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>2026 工作日计算器 · 暖橙版 | 智能工作日推算</title>
+    <!-- 引入 Google Font & Font Awesome 6 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- flatpickr 日期选择器 (轻量优雅) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fde9df 0%, #fae1cf 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 主容器 */
+        .calculator-container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* 标题与描述区 (暖橙氛围) */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .hero-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #b45f2b, #e07a3a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .hero-section h1 i {
+            background: none;
+            background-clip: unset;
+            -webkit-background-clip: unset;
+            color: #dc7f3c;
+            font-size: 2rem;
+        }
+        .subhead {
+            color: #b45a2c;
+            font-weight: 500;
+            font-size: 1rem;
+            border-top: 1px solid rgba(200, 100, 40, 0.25);
+            display: inline-block;
+            padding-top: 8px;
+        }
+        .holiday-badge {
+            background: rgba(255, 245, 235, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            display: inline-flex;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 6px 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #b6511a;
+            box-shadow: 0 2px 10px rgba(160, 80, 20, 0.1);
+            border: 1px solid #ffdcc0;
+        }
+
+        /* 双栏网格布局 */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 卡片样式 —— 浅橙色核心 */
+        .card {
+            background: #fff9f0;  /* 暖白浅橙底 */
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(140, 70, 20, 0.18), 0 1px 3px rgba(0,0,0,0.05);
+            padding: 1.8rem 2rem;
+            transition: all 0.25s ease;
+            border: 1px solid #ffe1c4;
+        }
+
+        .card:hover {
+            box-shadow: 0 24px 42px -16px rgba(160, 85, 30, 0.25);
+            background: #fffbf5;
+            border-color: #ffceaa;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid #ffdfc0;
+            padding-bottom: 1rem;
+            margin-bottom: 1.8rem;
+        }
+        .card-header i {
+            font-size: 1.8rem;
+            color: #e2823a;
+            background: #ffefe3;
+            padding: 10px;
+            border-radius: 18px;
+        }
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #834e26;
+            letter-spacing: -0.2px;
+        }
+        .card-header p {
+            font-size: 0.85rem;
+            color: #b46f3a;
+            margin-top: 4px;
+        }
+
+        /* 表单组 */
+        .input-group {
+            margin-bottom: 1.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #b45a2c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .input-group label i {
+            font-size: 1rem;
+            color: #e2823a;
+        }
+        .date-input, .number-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid #ffdbbc;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-family: 'Inter', monospace;
+            background: white;
+            transition: 0.2s;
+            outline: none;
+            font-weight: 500;
+            color: #4a2e18;
+        }
+        .date-input:focus, .number-input:focus {
+            border-color: #e2823a;
+            box-shadow: 0 0 0 3px rgba(226,130,58,0.2);
+        }
+        .row-2cols {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        .row-2cols .input-group {
+            flex: 1;
+        }
+        .btn {
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(110deg, #e27730, #f0914a);
+            color: white;
+            box-shadow: 0 4px 10px rgba(210, 100, 30, 0.25);
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(110deg, #ce6628, #e2823a);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(200, 90, 25, 0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #f3cbaa;
+            color: #cc7a3c;
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: #fff3e8;
+            border-color: #e2823a;
+        }
+        .result-area {
+            background: #fff3e9;
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.4rem;
+            margin-top: 1.8rem;
+            border-left: 4px solid #f48c42;
+        }
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: #c2692e;
+        }
+        .result-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #663e1c;
+            word-break: break-word;
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+        .result-note {
+            font-size: 0.8rem;
+            color: #b76a38;
+            margin-top: 8px;
+        }
+
+        /* 底部说明区 (暖色融合) */
+        .info-footer {
+            background: #fff4eaee;
+            border-radius: 1.8rem;
+            padding: 1.4rem 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #b6571e;
+            border: 1px solid #ffddbb;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            backdrop-filter: blur(4px);
+        }
+        .info-footer i {
+            margin-right: 6px;
+            color: #e2823a;
+        }
+
+        @media (max-width: 860px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            body {
+                padding: 1rem;
+            }
+            .card {
+                padding: 1.4rem;
+            }
+            .result-value {
+                font-size: 1.3rem;
+            }
+        }
+
+        .error-tooltip {
+            color: #d9534f;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        hr {
+            margin: 1rem 0;
+            border: 0;
+            height: 1px;
+            background: #ffe0c5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-container">
+    <div class="hero-section">
+        <h1>
+            <i class="fas fa-calendar-alt"></i> 
+            2026 工作日计算器
+        </h1>
+        <div class="subhead">
+            <i class="fas fa-briefcase"></i> 精准跳过周末 & 法定节假日 · 依据国务院办公厅通知
+        </div>
+        <div class="holiday-badge">
+            <span><i class="fas fa-chinese-yuan"></i> 元旦·春节·清明·劳动·端午·中秋·国庆</span>
+            <span><i class="fas fa-exchange-alt"></i> 含调休上班日</span>
+        </div>
+    </div>
+
+    <div class="grid-2col">
+        <!-- 左侧：日期推算器（浅橙色卡片） -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-arrow-right-to-bracket"></i>
+                <div>
+                    <h2>日期推算器</h2>
+                    <p>从某日开始，顺延 N 个工作日 → 结束日期</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <label><i class="far fa-calendar-check"></i> 起始日期</label>
+                <input type="text" id="startDate" class="date-input" placeholder="选择起始日期" value="2026-01-04">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-tasks"></i> 工作天数 (N)</label>
+                <input type="number" id="workDaysCount" class="number-input" value="10" min="0" step="1" placeholder="请输入正整数">
+            </div>
+            <div class="row-2cols">
+                <div style="flex:1"></div>
+                <button id="calcForwardBtn" class="btn btn-primary"><i class="fas fa-calculator"></i> 计算截止日期</button>
+            </div>
+            <div class="result-area" id="forwardResultArea">
+                <div class="result-label"><i class="far fa-calendar-plus"></i> 目标工作日结束日期</div>
+                <div class="result-value" id="endDateResult">—</div>
+                <div class="result-note" id="forwardNote">共计 N 个工作日（排除周末+法定假日，含调休班）</div>
+            </div>
+        </div>
+
+        <!-- 右侧：区间工作天数计算器（浅橙色卡片） -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i>
+                <div>
+                    <h2>区间工作天数</h2>
+                    <p>计算任意日期段内的实际工作日</p>
+                </div>
+            </div>
+            <div class="row-2cols">
+                <div class="input-group">
+                    <label><i class="fas fa-play"></i> 起始日期</label>
+                    <input type="text" id="rangeStart" class="date-input" placeholder="开始日期" value="2026-01-04">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-stop"></i> 结束日期</label>
+                    <input type="text" id="rangeEnd" class="date-input" placeholder="结束日期" value="2026-01-18">
+                </div>
+            </div>
+            <div class="row-2cols" style="margin-top: 0.5rem;">
+                <button id="calcRangeBtn" class="btn btn-primary" style="width: 100%;"><i class="fas fa-chart-simple"></i> 计算工作天数</button>
+            </div>
+            <div class="result-area" id="rangeResultArea">
+                <div class="result-label"><i class="fas fa-briefcase-clock"></i> 区间内实际工作日</div>
+                <div class="result-value" id="workDaysResult">—</div>
+                <div class="result-note" id="rangeNote">含调休上班，不含法定假日+周末</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-footer">
+        <span><i class="fas fa-gavel"></i> 依据国务院办公厅《关于2026年部分节假日安排的通知》</span>
+        <span><i class="fas fa-church"></i> 元旦1.1-1.3 | 春节2.15-2.23 | 清明4.4-4.6 | 劳动5.1-5.5 | 端午6.19-6.21 | 中秋9.25-9.27 | 国庆10.1-10.7</span>
+        <span><i class="fas fa-business-time"></i> 调休上班日：1月4日、2月14日、2月28日、5月9日、9月20日、10月10日</span>
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // 2026 法定节假日 + 调休上班日 (依据国务院权威通知)
+    // 数据完全匹配国办发明电〔2025〕7号
+    // --------------------------------------------------------------
+    const officialHolidays2026 = new Set([
+        "2026-01-01", "2026-01-02", "2026-01-03",   // 元旦
+        "2026-02-15", "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19",
+        "2026-02-20", "2026-02-21", "2026-02-22", "2026-02-23", // 春节9天
+        "2026-04-04", "2026-04-05", "2026-04-06",   // 清明
+        "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", // 劳动节
+        "2026-06-19", "2026-06-20", "2026-06-21",   // 端午
+        "2026-09-25", "2026-09-26", "2026-09-27",   // 中秋
+        "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07" // 国庆
+    ]);
+
+    // 调休上班日（周末补班）
+    const extraWorkWeekends = new Set([
+        "2026-01-04",   // 周日上班（元旦）
+        "2026-02-14",   // 周六（春节）
+        "2026-02-28",   // 周六（春节）
+        "2026-05-09",   // 周六（劳动节）
+        "2026-09-20",   // 周日（国庆/中秋）
+        "2026-10-10"    // 周六（国庆）
+    ]);
+
+    // 判断某一天是否为工作日 (核心)
+    function isWorkday(dateStr) {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return false;
+        const dayOfWeek = date.getDay(); // 0周日 6周六
+        
+        // 调休上班日 -> 工作日
+        if (extraWorkWeekends.has(dateStr)) return true;
+        // 法定假日 -> 非工作日
+        if (officialHolidays2026.has(dateStr)) return false;
+        // 周末 -> 非工作日
+        if (dayOfWeek === 0 || dayOfWeek === 6) return false;
+        // 其余为正常工作日
+        return true;
+    }
+
+    // 格式化 YYYY-MM-DD
+    function formatYMD(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+    
+    // 解析 YYYY-MM-DD
+    function parseDate(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month-1, day);
+    }
+
+    function addDays(date, days) {
+        const newDate = new Date(date);
+        newDate.setDate(date.getDate() + days);
+        return newDate;
+    }
+
+    // 从起始日期开始，顺延 workdays 个工作日 (包含起始日当天若为工作日则计入第一天)
+    // 完全符合实际工作场景: 从起始日(包含)向后计数 workdays 个工作日
+    function addWorkdays(startDateStr, workdays) {
+        if (workdays === 0) return startDateStr;
+        let current = parseDate(startDateStr);
+        let remaining = workdays;
+        // 若起始日不是工作日，则移动到下一个工作日（不消耗工作日配额）
+        while (!isWorkday(formatYMD(current))) {
+            current = addDays(current, 1);
+        }
+        // 此时 current 是第一个可计入的工作日
+        while (remaining > 0) {
+            remaining--;
+            if (remaining === 0) break;
+            current = addDays(current, 1);
+            while (!isWorkday(formatYMD(current))) {
+                current = addDays(current, 1);
+            }
+        }
+        return formatYMD(current);
+    }
+
+    // 区间内工作日计数 (包含两端)
+    function countWorkdaysBetween(startDateStr, endDateStr) {
+        let start = parseDate(startDateStr);
+        let end = parseDate(endDateStr);
+        if (start > end) {
+            [start, end] = [end, start];
+        }
+        let count = 0;
+        let cursor = new Date(start);
+        const endDate = new Date(end);
+        while (cursor <= endDate) {
+            if (isWorkday(formatYMD(cursor))) count++;
+            cursor = addDays(cursor, 1);
+        }
+        return count;
+    }
+
+    // ---------- UI 绑定与 flatpickr 初始化 (浅橙色主题适配) ----------
+    flatpickr.l10ns.default = flatpickr.l10ns.zh;
+    const commonConfig = {
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        locale: "zh",
+        yearRange: "2026",
+        minDate: "2026-01-01",
+        maxDate: "2026-12-31"
+    };
+    
+    const startDatePicker = flatpickr("#startDate", {
+        ...commonConfig,
+        defaultDate: "2026-01-04"
+    });
+    const rangeStartPicker = flatpickr("#rangeStart", {
+        ...commonConfig,
+        defaultDate: "2026-01-04"
+    });
+    const rangeEndPicker = flatpickr("#rangeEnd", {
+        ...commonConfig,
+        defaultDate: "2026-01-18"
+    });
+
+    // DOM 元素获取
+    const startDateInput = document.getElementById('startDate');
+    const workDaysInput = document.getElementById('workDaysCount');
+    const calcForwardBtn = document.getElementById('calcForwardBtn');
+    const endDateResultSpan = document.getElementById('endDateResult');
+    const forwardNoteSpan = document.getElementById('forwardNote');
+    
+    const rangeStartInput = document.getElementById('rangeStart');
+    const rangeEndInput = document.getElementById('rangeEnd');
+    const calcRangeBtn = document.getElementById('calcRangeBtn');
+    const workDaysResultSpan = document.getElementById('workDaysResult');
+    const rangeNoteSpan = document.getElementById('rangeNote');
+
+    // 辅助: 校验2026年份
+    function validateYear2026(dateStr, fieldHint = "日期") {
+        if (!dateStr) return false;
+        const year = parseInt(dateStr.slice(0,4));
+        return year === 2026;
+    }
+
+    // 左侧: 日期推算逻辑
+    function onForwardCalculate() {
+        let startRaw = startDateInput.value.trim();
+        let workDaysRaw = workDaysInput.value.trim();
+        if (!startRaw) {
+            endDateResultSpan.innerHTML = "⚠️ 请选择起始日期";
+            forwardNoteSpan.innerHTML = "起始日期不可为空";
+            return;
+        }
+        const startDateObj = parseDate(startRaw);
+        if (isNaN(startDateObj.getTime())) {
+            endDateResultSpan.innerHTML = "❌ 日期格式无效";
+            forwardNoteSpan.innerHTML = "请使用 YYYY-MM-DD 格式";
+            return;
+        }
+        if (startDateObj.getFullYear() !== 2026) {
+            endDateResultSpan.innerHTML = "📅 仅支持2026年工作日计算";
+            forwardNoteSpan.innerHTML = "根据国务院2026年放假通知，请选择2026年内日期";
+            return;
+        }
+        let days = parseInt(workDaysRaw);
+        if (isNaN(days) || days < 0) {
+            endDateResultSpan.innerHTML = "⛔ 无效工作天数";
+            forwardNoteSpan.innerHTML = "请输入 ≥0 的整数";
+            return;
+        }
+        if (days > 300) {
+            forwardNoteSpan.innerHTML = "⚠️ 工作天数较大，结果仍在2026年内验证";
+        }
+        let resultDateStr = addWorkdays(startRaw, days);
+        const resultYear = parseInt(resultDateStr.slice(0,4));
+        let extraMsg = "";
+        if (resultYear > 2026) {
+            extraMsg = " (注意：已超出2026年范围，节假日规则仅适用于2026年，超期结果仅供参考)";
+        }
+        endDateResultSpan.innerHTML = `<i class="fas fa-calendar-day"></i> ${resultDateStr}`;
+        forwardNoteSpan.innerHTML = `从 ${startRaw} 向后顺延 ${days} 个工作日，得到目标日期。${extraMsg}`;
+        if (days === 0) {
+            forwardNoteSpan.innerHTML = `0个工作日后即起始日本身 (若当天为非工作日则自动跳转至最近工作日)。当前规则：起始日本身若为工作日则计为第1天，N=0返回原日期。`;
+            endDateResultSpan.innerHTML = `<i class="fas fa-calendar-day"></i> ${resultDateStr}`;
+        }
+        if (!isWorkday(startRaw) && days > 0) {
+            forwardNoteSpan.innerHTML += ` 注意：起始日 ${startRaw} 为非工作日，已自动从下一个工作日开始计算。`;
+        }
+    }
+
+    // 右侧: 区间工作日计算
+    function onRangeCalculate() {
+        let sRaw = rangeStartInput.value.trim();
+        let eRaw = rangeEndInput.value.trim();
+        if (!sRaw || !eRaw) {
+            workDaysResultSpan.innerHTML = "⛔ 缺少日期";
+            rangeNoteSpan.innerHTML = "请完整填写起始和结束日期";
+            return;
+        }
+        let startDateObj = parseDate(sRaw);
+        let endDateObj = parseDate(eRaw);
+        if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+            workDaysResultSpan.innerHTML = "❌ 日期格式错误";
+            rangeNoteSpan.innerHTML = "请使用 YYYY-MM-DD 正确格式";
+            return;
+        }
+        if (startDateObj.getFullYear() !== 2026 || endDateObj.getFullYear() !== 2026) {
+            workDaysResultSpan.innerHTML = "📅 仅支持2026年日期";
+            rangeNoteSpan.innerHTML = "根据国务院2026年假日安排，计算器限定2026年区间，请调整日期";
+            return;
+        }
+        let workdaysCount = countWorkdaysBetween(sRaw, eRaw);
+        let startShow = sRaw, endShow = eRaw;
+        let swapped = false;
+        if (startDateObj > endDateObj) {
+            swapped = true;
+            [startShow, endShow] = [eRaw, sRaw];
+        }
+        workDaysResultSpan.innerHTML = `<i class="fas fa-briefcase"></i> ${workdaysCount} 天`;
+        let noteMsg = `区间 ${startShow} 至 ${endShow} 实际工作日共 ${workdaysCount} 天。`;
+        if (swapped) noteMsg = `检测到起始日期晚于结束日期，已自动交换。${noteMsg}`;
+        noteMsg += " 已扣除全部法定节假日+周末，并计入调休上班日。";
+        rangeNoteSpan.innerHTML = noteMsg;
+        if (workdaysCount === 0) {
+            rangeNoteSpan.innerHTML = noteMsg + " 区间内无工作日 (全为假期或周末)";
+        }
+    }
+    
+    // 实时提示辅助 (区间顺序提醒)
+    function updateRangeHint() {
+        let s = rangeStartInput.value;
+        let e = rangeEndInput.value;
+        if (s && e) {
+            const sDate = parseDate(s);
+            const eDate = parseDate(e);
+            if (!isNaN(sDate) && !isNaN(eDate) && sDate > eDate) {
+                rangeNoteSpan.innerHTML = "⏳ 起始日期晚于结束日期，计算时会自动互换，放心使用。";
+            } else if (s && e) {
+                rangeNoteSpan.innerHTML = "点击【计算工作天数】获取区间准确工作日数。";
+            }
+        }
+    }
+
+    // 事件监听
+    calcForwardBtn.addEventListener('click', onForwardCalculate);
+    calcRangeBtn.addEventListener('click', onRangeCalculate);
+    
+    rangeStartInput.addEventListener('change', updateRangeHint);
+    rangeEndInput.addEventListener('change', updateRangeHint);
+    
+    // 键盘快捷触发
+    workDaysInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') onForwardCalculate(); });
+    startDateInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') onForwardCalculate(); });
+    rangeStartInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') onRangeCalculate(); });
+    rangeEndInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') onRangeCalculate(); });
+    
+    // 页面加载完成后，显示默认计算结果 (符合截图示例: 10个工作日→2026-01-15 ; 区间1.4-1.18→11天)
+    window.addEventListener('DOMContentLoaded', () => {
+        onForwardCalculate();   // 默认起始2026-01-04 + 10 → 2026-01-15
+        onRangeCalculate();     // 2026-01-04 至 2026-01-18 → 11个工作日
+        updateRangeHint();
+    });
+    
+    console.log("2026 工作日计算器 (浅橙主题) 已启动，数据基于国务院办公厅通知");
+</script>
+</body>
+</html>
